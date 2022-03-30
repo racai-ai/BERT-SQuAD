@@ -32,14 +32,14 @@ from tqdm import tqdm, trange
 
 from tensorboardX import SummaryWriter
 
-from pytorch_transformers import (WEIGHTS_NAME, BertConfig,
+from transformers import (WEIGHTS_NAME, BertConfig,
                                   BertForQuestionAnswering, BertTokenizer,
                                   XLMConfig, XLMForQuestionAnswering,
                                   XLMTokenizer, XLNetConfig,
                                   XLNetForQuestionAnswering,
                                   XLNetTokenizer)
 
-from pytorch_transformers import AdamW, WarmupLinearSchedule
+from transformers import AdamW, get_linear_schedule_with_warmup
 
 from utils_squad import (read_squad_examples, convert_examples_to_features,
                          RawResult, write_predictions,
@@ -51,9 +51,6 @@ from utils_squad import (read_squad_examples, convert_examples_to_features,
 from utils_squad_evaluate import EVAL_OPTS, main as evaluate_on_squad
 
 logger = logging.getLogger(__name__)
-
-ALL_MODELS = sum((tuple(conf.pretrained_config_archive_map.keys()) \
-                  for conf in (BertConfig, XLNetConfig, XLMConfig)), ())
 
 MODEL_CLASSES = {
     'bert': (BertConfig, BertForQuestionAnswering, BertTokenizer),
@@ -93,7 +90,7 @@ def train(args, train_dataset, model, tokenizer):
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
-    scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=args.warmup_steps, num_training_steps=t_total)
     if args.fp16:
         try:
             from apex import amp
@@ -329,7 +326,7 @@ def main():
     parser.add_argument("--model_type", default=None, type=str, required=True,
                         help="Model type selected in the list: " + ", ".join(MODEL_CLASSES.keys()))
     parser.add_argument("--model_name_or_path", default=None, type=str, required=True,
-                        help="Path to pre-trained model or shortcut name selected in the list: " + ", ".join(ALL_MODELS))
+                        help="Path to pre-trained model or shortcut name selected in the list:")
     parser.add_argument("--output_dir", default=None, type=str, required=True,
                         help="The output directory where the model checkpoints and predictions will be written.")
 
