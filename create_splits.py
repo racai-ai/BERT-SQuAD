@@ -3,6 +3,11 @@ import json
 with open("data/covid-squad-v1.json", "r", encoding="utf-8") as json_file:
     data = json.load(json_file)
 
+for p in data["data"][0]["paragraphs"]:
+    for qa in p['qas']:
+        qa['id'] = str(qa['id'])
+
+
 with open("data/train-covid-squad-v1.json", "w", encoding="utf-8") as json_file:
     json.dump(
         {
