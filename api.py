@@ -6,9 +6,12 @@ from bert import QA
 app = Flask(__name__)
 CORS(app)
 
+app.config['JSON_AS_ASCII'] = False
+
 model = QA("model")
 
-@app.route("/predict",methods=['POST'])
+
+@app.route("/predict", methods=['POST'])
 def predict():
     doc = request.json["document"]
     q = request.json["question"]
@@ -19,5 +22,6 @@ def predict():
         print(e)
         return jsonify({"result":"Model Failed"})
 
+
 if __name__ == "__main__":
-    app.run('0.0.0.0',port=8000)
+    app.run('127.0.0.1',port=8000)

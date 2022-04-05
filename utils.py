@@ -5,8 +5,7 @@ import math
 
 import numpy as np
 import torch
-from pytorch_transformers.tokenization_bert import (BasicTokenizer,
-                                                    whitespace_tokenize)
+from transformers import AutoTokenizer
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 
 
@@ -294,7 +293,7 @@ def _get_best_indexes(logits, n_best_size):
 
 RawResult = collections.namedtuple("RawResult",["unique_id", "start_logits", "end_logits"])
 
-def get_final_text(pred_text, orig_text, do_lower_case, verbose_logging=False):
+def get_final_text(pred_text, orig_text, tokenizer, do_lower_case, verbose_logging=False):
     """Project the tokenized prediction back to the original text."""
 
     # When we created the data, we kept track of the alignment between original
@@ -337,7 +336,7 @@ def get_final_text(pred_text, orig_text, do_lower_case, verbose_logging=False):
     # and `pred_text`, and check if they are the same length. If they are
     # NOT the same length, the heuristic has failed. If they are the same
     # length, we assume the characters are one-to-one aligned.
-    tokenizer = BasicTokenizer(do_lower_case=do_lower_case)
+    # tokenizer = AutoTokenizer.from_pretrained()
 
     tok_text = " ".join(tokenizer.tokenize(orig_text))
 
@@ -401,7 +400,7 @@ def _compute_softmax(scores):
         probs.append(score / total_sum)
     return probs
 
-def get_answer(example, features, all_results, n_best_size,
+def get_answer(tokenizer, example, features, all_results, n_best_size,
                 max_answer_length, do_lower_case):
     example_index_to_features = collections.defaultdict(list)
     for feature in features:
@@ -476,7 +475,7 @@ def get_answer(example, features, all_results, n_best_size,
             tok_text = " ".join(tok_text.split())
             orig_text = " ".join(orig_tokens)
 
-            final_text = get_final_text(tok_text, orig_text,do_lower_case)
+            final_text = get_final_text(tok_text, orig_text, tokenizer, do_lower_case)
             if final_text in seen_predictions:
                 continue
 

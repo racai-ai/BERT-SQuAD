@@ -6,7 +6,7 @@ import math
 
 import numpy as np
 import torch
-from pytorch_transformers import (WEIGHTS_NAME, BertConfig,
+from transformers import (WEIGHTS_NAME, BertConfig,
                                   BertForQuestionAnswering, BertTokenizer)
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 
@@ -21,13 +21,13 @@ RawResult = collections.namedtuple("RawResult",
 class QA:
 
     def __init__(self,model_path: str):
-        self.max_seq_length = 384
+        self.max_seq_length = 512
         self.doc_stride = 128
         self.do_lower_case = True
         self.max_query_length = 64
         self.n_best_size = 20
         self.max_answer_length = 30
-        self.model, self.tokenizer = self.load_model(model_path)
+        self.model, self.tokenizer = self.load_model(model_path, self.do_lower_case)
         if torch.cuda.is_available():
             self.device = 'cuda'
         else:
@@ -37,7 +37,7 @@ class QA:
 
 
     def load_model(self,model_path: str,do_lower_case=False):
-        config = BertConfig.from_pretrained(model_path + "/bert_config.json")
+        config = BertConfig.from_pretrained(model_path)
         tokenizer = BertTokenizer.from_pretrained(model_path, do_lower_case=do_lower_case)
         model = BertForQuestionAnswering.from_pretrained(model_path, from_tf=False, config=config)
         return model, tokenizer
@@ -71,5 +71,5 @@ class QA:
                                     start_logits = to_list(outputs[0][i]),
                                     end_logits   = to_list(outputs[1][i]))
                 all_results.append(result)
-        answer = get_answer(example,features,all_results,self.n_best_size,self.max_answer_length,self.do_lower_case)
+        answer = get_answer(self.tokenizer, example,features,all_results,self.n_best_size,self.max_answer_length,self.do_lower_case)
         return answer
