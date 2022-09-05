@@ -49,7 +49,7 @@ setup(
     # packages=find_packages(exclude=['jupyter']),  # Required
     packages=find_packages("."),  # Required
 
-    # install_requires=['transformers', 'sklearn', 'torch', 'scikit-multilearn', 'pyyaml', 'waitress', 'flask'],  # Optional
+    install_requires=['pytorch-transformers'],  # Optional
 
     zip_safe=False,
 )
